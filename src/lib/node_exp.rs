@@ -70,7 +70,6 @@ impl<'a> Node<'a> {
 
     pub fn print_tree(&self) {
         let mut ident = 0;
-        println!("{}", &self.id);
 
         fn func<'a>(ident: i32, current_parent: &Rc<RefCell<Node<'a>>>) {
             let ident = ident + 1;
@@ -80,8 +79,6 @@ impl<'a> Node<'a> {
             for _ in 0..ident {
                 s += "  ";
             }
-
-            println!("{s}{}", &current_parent.borrow().id);
 
             for child in &current_parent.borrow().children {
                 let child_ref = Rc::clone(&child);

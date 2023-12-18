@@ -14,14 +14,14 @@ use lib::node::Node;
 
 
 fn main() {
-    let root = Node::new("Root", "root", Option::None);
+    let root = Node::new_html_element( "root", Option::None);
 
-    let child1 = Node::new("Child1", "nod1", Some(&root));
-    let child3 = Node::new("Child3", "nod3", Some(&child1));
-    let child5 = Node::new("Child5", "nod5", Some(&child1));
-    let child4 = Node::new("Child4", "nod4", Some(&root));
-    let mut child2 = Node::new("Child2", "node2", Some(&child1));
-    let child6 = Node::new("Child6", "nod6", Some(&child4));
+    let child1 = Node::new_html_element( "nod1", Some(&root));
+    let child3 = Node::new_html_element( "nod3", Some(&child1));
+    let child5 = Node::new_html_element( "nod5", Some(&child1));
+    let child4 = Node::new_html_element( "nod4", Some(&root));
+    let mut child2 = Node::new_html_element( "node2", Some(&child1));
+    let child6 = Node::new_html_element( "nod6", Some(&child4));
 
     let mut current = Rc::clone(&child2);
 
@@ -30,7 +30,6 @@ fn main() {
 
         match current.borrow().get_parent() {
             Some(parent) => {
-                println!("ID: {}, Tag: {:?}", parent.borrow().id, parent.borrow().tag);
                 parent_node = Some(parent);
             }
             None => ()
@@ -44,7 +43,7 @@ fn main() {
         }
     }
 
-    let child = Node::new("nova", "nova", None);
+    let child = Node::new_html_element( "nova", None);
 
     Node::reparent_node(&child4, &child, true);
     
@@ -53,16 +52,16 @@ fn main() {
     Node::insert_child_at_index(index, &child, &child4);
     Node::reparent_node(&child4, &child3, true);
 
-    let child2 = Node::new("nova2", "nova2", Some(&child));
+    let child2 = Node::new_html_element( "nova2", Some(&child));
 
     let mut next = Some(child1);
     for _ in 0..4 {
-        break;
+        
         match next {
             None => println!("nothing"),
             Some(node) => {
                 
-                println!("\n current node: {}", node.borrow().id);
+                //println!("\n current node: {}", node.borrow().id);
 
                 match node.borrow().index_as_child() {
                     None => println!("is root"),
@@ -74,7 +73,7 @@ fn main() {
                 match node.borrow().previous_node() {
                     None => (),
                     Some(prv) => {
-                        println!("previous {}", prv.borrow().id)
+                        //println!("previous {}", prv.borrow().id)
                     }
                 }
     
@@ -85,6 +84,6 @@ fn main() {
 
     root.borrow().print_tree();
 
-
+    print!("{}", root.borrow().html().open);
     
 }

@@ -1,24 +1,39 @@
+
 use std::rc::Rc;
 use std::cell::RefCell;
 use uuid;
 
-pub struct Node<'a> {
-    pub id: String,
-    pub tag: String,
+use super::node_type::HtmlElement;
+
+pub struct Node<'a>
+{
     pub children: Vec<Rc<RefCell<Node<'a>>>>,
     pub parent: Option<Rc<RefCell<Node<'a>>>>,
-    pub internal_id: String
+    pub internal_id: String,
+    pub self_closing: bool,
+    pub node_type: Box<dyn NodeType<'a> + 'a>    
 }
 
-impl<'a> Node<'a> {
-    pub fn new(tag: &str, id: &str, parent_node: Option<&Rc<RefCell<Node<'a>>>>) -> Rc<RefCell<Node<'a>>> {
+#[derive(Debug)]
+pub struct Tag {
+    pub open: String,
+    pub close: String
+}
+
+pub trait NodeType<'a> {
+    fn html(&self) -> Tag;
+}
+
+impl<'a> Node<'a>
+ {
+    pub fn new(parent_node: Option<&Rc<RefCell<Node<'a>>>>, node_type: impl NodeType<'a> + 'a) -> Rc<RefCell<Self>> {
         
-        let node = Rc::new(RefCell::new(Node {
-            id: id.to_string(),
-            tag: tag.to_string(),
+        let node = Rc::new(RefCell::new(Self {
             children: Vec::new(),
             parent: None,
-            internal_id: uuid::Uuid::new_v4().to_string()
+            internal_id: uuid::Uuid::new_v4().to_string(),
+            self_closing: false,
+            node_type: Box::new(node_type)
         }));
 
         match parent_node { //Check if parent node was provided
@@ -34,6 +49,19 @@ impl<'a> Node<'a> {
         node
     }
 
+    pub fn new_html_element(tag: &str, parent_node: Option<&Rc<RefCell<Node<'a>>>>) -> Rc<RefCell<Self>> {
+        //let html_element: HtmlElement<'a, T> = HtmlElement::new(tag);
+
+        fn make_element<'a, T>(tag: &str) -> HtmlElement<'a, T> {
+            HtmlElement::new(tag)
+        }
+
+        let html_element: HtmlElement<'static, String> = make_element::<String>(tag);
+
+        Node::new(parent_node, html_element)
+    }
+
+    
     //Request relation between nodes
     pub fn get_parent(&self) -> Option<Rc<RefCell<Node<'a>>>> {
         self.parent.clone()
@@ -112,6 +140,10 @@ impl<'a> Node<'a> {
                 }
             }
         }
+    }
+
+    pub fn html(&self) -> Tag {
+        self.node_type.html()
     }
 
 }
