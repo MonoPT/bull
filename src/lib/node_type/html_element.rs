@@ -1,12 +1,13 @@
 use std::marker::PhantomData;
 
-use super::node::{NodeType, Tag};
+use super::super::node::{NodeType, Tag};
 
 pub struct HtmlElement<'a, T> {
     id: String,
     classes: Vec<String>,
     tag: String,
-    phantom: PhantomData<&'a T>
+    phantom: PhantomData<&'a T>,
+    text: String
 }
 
 impl<'a, T> NodeType<'a> for HtmlElement<'a, T> {
@@ -17,6 +18,18 @@ impl<'a, T> NodeType<'a> for HtmlElement<'a, T> {
             close: format!("</{}>", self.tag)
         }
     }
+
+    fn node_tag(&self) -> String {
+        self.tag.clone()
+    }
+
+    fn text(&self) -> &str {
+        &self.text
+    }
+
+    fn set_text(&mut self, _text: &str) -> Result<String, String> {
+        Err("Element is not a text node".to_owned())
+    }
 }
 
 impl<'a, T> HtmlElement<'a, T> {
@@ -25,6 +38,7 @@ impl<'a, T> HtmlElement<'a, T> {
             id: String::new(),
             classes: vec![],
             tag: tag.to_string(),
+            text: String::new(),
             phantom: PhantomData
         }
     }

@@ -1,6 +1,6 @@
 mod lib;
 
-use std::{rc::Rc, cell::RefCell, borrow::BorrowMut};
+use std::{rc::Rc, cell::RefCell};
 
 use lib::node::Node;
 
@@ -9,13 +9,18 @@ use lib::node::Node;
 // //  - make a children iterator
 //  - Make a function to find if there is infinite recursion and if there is panic!
 //  - Passar funções exclusivamente internas para ficheiro à parte de forma a isolar esses métodos (set_parent)
-//  - print the tree to the terminal
 //  - parse the .bull file
-
+// - Add support for comment elements when building outputs
+// - add support for root element (Always returns empty Tag struct)
 
 fn main() {
-    let root = Node::new_html_element( "root", Option::None);
+    Node::parse_string("a \n b");
+}
 
+/*
+fn main() {
+    let root = Node::new_html_element( "root", Option::None);
+    
     let child1 = Node::new_html_element( "nod1", Some(&root));
     let child3 = Node::new_html_element( "nod3", Some(&child1));
     let child5 = Node::new_html_element( "nod5", Some(&child1));
@@ -82,8 +87,16 @@ fn main() {
         }
     }
 
-    root.borrow().print_tree();
+    //root.borrow().print_tree();
 
-    print!("{}", root.borrow().html().open);
+    let text_node = Node::new_text_element("This is a string", Some(&child5));
+    let child8 = Node::new_html_element( "nod8", Some(&text_node));
+
+    let mut text = text_node.borrow_mut().set_text("This is a modified string");
+
+    println!("{}", text_node.borrow().html(0));
+    print!("{}", root.borrow().html(0));
     
 }
+
+*/

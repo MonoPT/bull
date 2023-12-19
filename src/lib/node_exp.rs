@@ -80,13 +80,14 @@ impl<'a> Node<'a> {
                 s += "  ";
             }
 
-            for child in &current_parent.borrow().children {
-                let child_ref = Rc::clone(&child);
+            println!("{s}{}", current_parent.borrow().node_type.node_tag());
 
+            for child in &current_parent.borrow().children {
                 func(ident, child);
             }
         }
 
+        println!("{}", self.node_type.node_tag());
         for child in &self.children {
             func(ident, child);
         }

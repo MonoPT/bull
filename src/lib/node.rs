@@ -3,6 +3,8 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use uuid;
 
+use crate::lib::node_type::TextElement;
+
 use super::node_type::HtmlElement;
 
 pub struct Node<'a>
@@ -11,10 +13,10 @@ pub struct Node<'a>
     pub parent: Option<Rc<RefCell<Node<'a>>>>,
     pub internal_id: String,
     pub self_closing: bool,
-    pub node_type: Box<dyn NodeType<'a> + 'a>    
+    pub node_type: Box<dyn NodeType<'a> + 'a>,
+    pub identation: usize   
 }
 
-#[derive(Debug)]
 pub struct Tag {
     pub open: String,
     pub close: String
@@ -22,6 +24,9 @@ pub struct Tag {
 
 pub trait NodeType<'a> {
     fn html(&self) -> Tag;
+    fn node_tag(&self) -> String;
+    fn text(&self) -> &str;
+    fn set_text(&mut self, new_text: &str) -> Result<String, String>;
 }
 
 impl<'a> Node<'a>
@@ -33,7 +38,8 @@ impl<'a> Node<'a>
             parent: None,
             internal_id: uuid::Uuid::new_v4().to_string(),
             self_closing: false,
-            node_type: Box::new(node_type)
+            node_type: Box::new(node_type),
+            identation: 0
         }));
 
         match parent_node { //Check if parent node was provided
@@ -57,6 +63,16 @@ impl<'a> Node<'a>
         }
 
         let html_element: HtmlElement<'static, String> = make_element::<String>(tag);
+
+        Node::new(parent_node, html_element)
+    }
+
+    pub fn new_text_element(text: &str, parent_node: Option<&Rc<RefCell<Node<'a>>>>) -> Rc<RefCell<Self>>  {
+        fn make_element<'a, T>(text: &str) -> TextElement<'a, T> {
+            TextElement::new(text)
+        }
+
+        let html_element: TextElement<'static, String> = make_element::<String>(text);
 
         Node::new(parent_node, html_element)
     }
@@ -142,8 +158,36 @@ impl<'a> Node<'a>
         }
     }
 
-    pub fn html(&self) -> Tag {
-        self.node_type.html()
+    pub fn html(&self, identation: usize) -> String {
+        let mut html = String::new();
+
+        let mut ident = String::new();
+
+        for _ in 0..identation {
+            ident += "   ";
+        }
+
+        let parent = self.node_type.html();
+
+        html += &format!("{ident}{}", parent.open);
+
+        for child in &self.children {
+            let child_string = child.borrow().html(identation + 1);
+
+            html += &format!("\n{child_string}");
+        }
+        
+        html += &format!("\n{ident}{}", parent.close);
+
+        html
+    }
+
+    pub fn text(&self) -> &str {
+        self.node_type.text()
+    }
+
+    pub fn set_text(&mut self, text: &str) -> Result<String, String> {
+        self.node_type.set_text(text)
     }
 
 }
