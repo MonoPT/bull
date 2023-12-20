@@ -11,10 +11,26 @@ use lib::node::Node;
 //  - Passar funções exclusivamente internas para ficheiro à parte de forma a isolar esses métodos (set_parent)
 //  - parse the .bull file
 // - Add support for comment elements when building outputs
-// - add support for root element (Always returns empty Tag struct)
+// - Na hora de gerar ficheiro final verificar se está na lista de self closing nativo e fechar automáticamente
 
 fn main() {
-    Node::parse_string("a \n b");
+    let html = r"
+        a.first.element#container-1#secondIdMakeIntoAClass @click='1 +1' x='3'
+            b class='red'
+            .class.ok
+        #box
+            a
+                cd
+                    df
+                d
+            br
+        // isto é um comentário
+    ".to_string();
+
+    //Node::parse_string(html);
+    let root = Node::parse_file("./example.bull");
+
+    println!("{}", root.borrow().html());
 }
 
 /*

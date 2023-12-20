@@ -13,8 +13,11 @@ pub struct HtmlElement<'a, T> {
 impl<'a, T> NodeType<'a> for HtmlElement<'a, T> {
     fn html(&self) -> Tag {
 
+        let id = self.generate_id_tag();
+        let classes = self.generate_classes();
+
         Tag {
-            open: format!("<{}>", self.tag),
+            open: format!("<{}{id}{classes}>", self.tag),
             close: format!("</{}>", self.tag)
         }
     }
@@ -33,13 +36,33 @@ impl<'a, T> NodeType<'a> for HtmlElement<'a, T> {
 }
 
 impl<'a, T> HtmlElement<'a, T> {
-    pub fn new(tag: &str) -> Self {
+    pub fn new(tag: &str, id: &str, classes: Vec<String>) -> Self {
         HtmlElement {
-            id: String::new(),
-            classes: vec![],
+            id: id.to_owned(),
+            classes: classes,
             tag: tag.to_string(),
             text: String::new(),
             phantom: PhantomData
         }
     }
+
+    fn generate_id_tag(&self) -> String {
+        if self.id.len() > 0 {
+            return format!(" id=\"{}\"", self.id);
+        }
+
+        String::new()
+    }
+
+    fn generate_classes(&self) -> String { //Classe deve ser atualizada uma vez que os attrs sejam implementados
+        
+        if self.classes.len() > 0 {
+            return format!(" class=\"{}\"", self.classes.join(" "));
+        }
+        
+        
+
+        String::new()
+    }
 }
+

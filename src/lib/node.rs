@@ -3,7 +3,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use uuid;
 
-use crate::lib::node_type::TextElement;
+use crate::lib::node_type::{TextElement, RootElement};
 
 use super::node_type::HtmlElement;
 
@@ -31,7 +31,7 @@ pub trait NodeType<'a> {
 
 impl<'a> Node<'a>
  {
-    pub fn new(parent_node: Option<&Rc<RefCell<Node<'a>>>>, node_type: impl NodeType<'a> + 'a) -> Rc<RefCell<Self>> {
+    pub fn new(parent_node: Option<&Rc<RefCell<Node<'a>>>>, node_type: impl NodeType<'a> + 'a, identation: usize) -> Rc<RefCell<Self>> {
         
         let node = Rc::new(RefCell::new(Self {
             children: Vec::new(),
@@ -39,7 +39,7 @@ impl<'a> Node<'a>
             internal_id: uuid::Uuid::new_v4().to_string(),
             self_closing: false,
             node_type: Box::new(node_type),
-            identation: 0
+            identation: identation
         }));
 
         match parent_node { //Check if parent node was provided
@@ -55,26 +55,36 @@ impl<'a> Node<'a>
         node
     }
 
-    pub fn new_html_element(tag: &str, parent_node: Option<&Rc<RefCell<Node<'a>>>>) -> Rc<RefCell<Self>> {
+    pub fn new_html_element(tag: &str, parent_node: Option<&Rc<RefCell<Node<'a>>>>, identation: usize, classes: Vec<String>, id: &str) -> Rc<RefCell<Self>> {
         //let html_element: HtmlElement<'a, T> = HtmlElement::new(tag);
 
-        fn make_element<'a, T>(tag: &str) -> HtmlElement<'a, T> {
-            HtmlElement::new(tag)
+        fn make_element<'a, T>(tag: &str, classes: Vec<String>, id: &str) -> HtmlElement<'a, T> {
+            HtmlElement::new(tag, id, classes)
         }
 
-        let html_element: HtmlElement<'static, String> = make_element::<String>(tag);
+        let html_element: HtmlElement<'static, String> = make_element::<String>(tag, classes, id);
 
-        Node::new(parent_node, html_element)
+        Node::new(parent_node, html_element, identation)
     }
 
-    pub fn new_text_element(text: &str, parent_node: Option<&Rc<RefCell<Node<'a>>>>) -> Rc<RefCell<Self>>  {
+    pub fn new_text_element(text: &str, parent_node: Option<&Rc<RefCell<Node<'a>>>>, identation: usize) -> Rc<RefCell<Self>>  {
         fn make_element<'a, T>(text: &str) -> TextElement<'a, T> {
             TextElement::new(text)
         }
 
         let html_element: TextElement<'static, String> = make_element::<String>(text);
 
-        Node::new(parent_node, html_element)
+        Node::new(parent_node, html_element, identation)
+    }
+
+    pub fn new_root_element() -> Rc<RefCell<Self>>  {
+        fn make_element<'a, T>() -> RootElement<'a, T> {
+            RootElement::new()
+        }
+
+        let html_element: RootElement<'static, String> = make_element::<String>();
+
+        Node::new(None, html_element, 0)
     }
 
     
@@ -158,21 +168,29 @@ impl<'a> Node<'a>
         }
     }
 
-    pub fn html(&self, identation: usize) -> String {
+    pub fn html(&self) -> String {
+        self.generate_html(0)
+    }
+
+    fn generate_html(&self, identation: usize) -> String {
         let mut html = String::new();
 
         let mut ident = String::new();
 
-        for _ in 0..identation {
-            ident += "   ";
+        if identation > 1 {
+            for _ in 0..identation - 1 {
+                ident += "   ";
+            }
         }
+
+        
 
         let parent = self.node_type.html();
 
         html += &format!("{ident}{}", parent.open);
 
         for child in &self.children {
-            let child_string = child.borrow().html(identation + 1);
+            let child_string = child.borrow().generate_html(identation + 1);
 
             html += &format!("\n{child_string}");
         }
