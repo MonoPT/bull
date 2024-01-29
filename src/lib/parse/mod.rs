@@ -37,6 +37,10 @@ impl<'a> Node<'a> {
                     let node = handle_new_element(&last_element, tag_or_text, id, classes, properties, identation, is_default_self_closed, inline_text);
                     last_element = Rc::clone(&node);
                 },
+                NodeType::Text => {
+                    let node = handle_new_text_node(&last_element, identation, tag_or_text);
+                    last_element = Rc::clone(&node);
+                }
                 _ => ()
             }            
         }
@@ -83,6 +87,40 @@ fn handle_new_element<'a>(last_child: &Rc<RefCell<Node<'a>>>, tag: String, id: S
         loop {
             if last_node.borrow().identation < ident {
                 return Node::new_html_element(&tag, Some(&last_node), ident, classes, &id, is_self_closed, attributes, inline_text); 
+            }
+
+            let mut temp = Rc::clone(&last_node);
+
+            match last_node.borrow().get_parent() {
+                None => panic!("Something went wrong at handle new element function"),
+                Some(parent) => {
+                    temp = Rc::clone(&parent);
+                }
+            }
+
+            last_node = temp;
+        }
+    }
+}
+
+fn handle_new_text_node<'a>(last_child: &Rc<RefCell<Node<'a>>>, ident: usize, text: String) -> Rc<RefCell<Node<'a>>> {
+    let ident = ident;
+    
+    if last_child.borrow().identation < ident {
+        return Node::new_text_element(&text, Some(last_child), ident);
+    } else if last_child.borrow().identation == ident {
+        match last_child.borrow().get_parent() {
+            None => panic!("Something went wrong at handle new element function"),
+            Some(parent) => {
+                return Node::new_text_element(&text, Some(&parent), ident); 
+            }
+        }
+    } else {
+        let mut last_node = Rc::clone(&last_child);
+
+        loop {
+            if last_node.borrow().identation < ident {
+                return Node::new_text_element(&text, Some(&last_node), ident); 
             }
 
             let mut temp = Rc::clone(&last_node);
@@ -265,6 +303,21 @@ fn check_line_type(line: &str) -> (String, String, Vec<String>, Vec<(String, Str
             let text = line.strip_prefix("//").unwrap().to_owned();
 
             return (text, "".to_owned(), vec![], attributes, node_type, is_defined_as_self_closed, "".to_string());
+        }
+
+        if line.starts_with('"') || line.starts_with('\'') || line.starts_with('`') {
+            let mut line_chars = line.chars().map(|s| s.to_string()).collect::<Vec<String>>();
+            line_chars.remove(0);
+
+            if line.ends_with('"') || line.ends_with('\'') || line.ends_with('`') {
+                line_chars.remove(line_chars.len() - 1);
+            }
+
+            let line: String = line_chars.iter().map(|s| s.to_owned()).collect();
+
+            node_type = NodeType::Text;
+
+            return (line, "".to_owned(), vec![], attributes, node_type, false, "".to_string());
         }
 
         panic!("could not parse line: {}", line);
