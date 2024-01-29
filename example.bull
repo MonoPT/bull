@@ -5,7 +5,7 @@ ul
         img src="./apple.png"
         "Pear"
 
-section.landing#main
+section#main.landing
     .wrapper
         img src="./pear.png"
         span "hello world"

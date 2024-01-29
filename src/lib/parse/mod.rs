@@ -194,15 +194,25 @@ fn check_line_type(line: &str) -> (String, String, Vec<String>, Vec<(String, Str
         temp = split.join(".");
     }
 
+    let mut id_split = id.split(".").collect::<Vec<&str>>();
+    
     //handle classes
     classes = temp.split(".").map(|s| s.to_string()).collect();
+
+    if id_split.len() > 1 {
+        let id_fix = id_split[0];
+        id_split.remove(0);
+
+        for class in id_split {
+            classes.push(class.to_string());
+        }
+
+        id = id_fix.to_owned();
+    }
 
     idetifier = classes[0].to_owned();
 
     
-
-    let mut properties = String::new();
-
     if idetifier.chars().last().unwrap_or_default() == '/' {
         is_defined_as_self_closed = true;
 
@@ -295,8 +305,6 @@ fn check_line_type(line: &str) -> (String, String, Vec<String>, Vec<(String, Str
         }
 
         splited_line.remove(0);
-
-        properties = splited_line.join(" ");
 
         return (idetifier, id, classes_output, attributes, node_type, is_defined_as_self_closed, inline_text);
     } else {
