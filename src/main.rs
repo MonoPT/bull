@@ -25,9 +25,13 @@ fn main() {
         // isto é um comentário
     ".to_string();
 
-    Node::parse_string(html);
-    
+    //Reads code from string and outputs string with result
+    let root_from_string = Node::parse_string(html);
+
+
+    //Reads code from file and outputs string with result
     let root = Node::parse_file("./example.bull");
+
 
     println!("{}", root.borrow().html());
 }
