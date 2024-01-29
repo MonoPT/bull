@@ -1,15 +1,25 @@
-a.first.element#container-1#secondIdMadeIntoAClass @click='1 +1' x='3'
-    b class='red blue' data-bind="1"
-    .class.ok
-#box "Teste de texto inline"
-    img.image
-        .go-up
-            "Teste de texto"
-    .autoclose/ "Texto colocado depois devido a constragimentos"
-    a "Texto âncora"
-        cd
-            df "Texto inline em tag df"
-                "Texto child de df"
-        d
-    br
-// isto é um comentário
+ul 
+    li "Banana"
+    li "Apple"
+    li 
+        img src="./apple.png"
+        "Pear"
+
+section.landing#main
+    .wrapper
+        img src="./pear.png"
+        span "hello world"
+            ul
+                li "text 1"
+                br
+                li "text 2"
+
+hr
+
+section#products class="teste" selected
+    ul
+        li "prod 1"
+        li "prod 2"
+        li "prod 3"
+
+link href="./style1.css" rel="stylesheet" crossorigin asd="sad"

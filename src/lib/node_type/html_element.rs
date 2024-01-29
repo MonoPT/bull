@@ -88,13 +88,19 @@ impl<'a, T> HtmlElement<'a, T> {
     fn handle_attributes(&self) -> String { //Expand later for reactivity
         let mut output = String::new();
 
-
         for attr in self.attributes.iter(){
             if attr.0.starts_with("@") {
                 continue;
             }
 
-            output += &format!("{}=\"{}\"", attr.0, attr.1);
+            let mut att1 = format!("=\"{}\"", attr.1);
+        
+            if attr.1.len() < 1 {
+                att1 = String::new();
+            }
+
+
+            output += &format!("{}{} ", attr.0, att1);
         }
 
         output

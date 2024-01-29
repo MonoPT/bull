@@ -231,6 +231,11 @@ fn check_line_type(line: &str) -> (String, String, Vec<String>, Vec<(String, Str
             
 
             for char in other.chars() {
+                if char == ' ' && key.len() > 0 {
+                    attributes.push((key.clone(), "".to_owned()));
+                    key = String::new();
+                }
+
                 let mut closed_this_loop_pair = false;
                 if is_inside_string_block && char == string_closing_char {
                     is_inside_string_block = false;
@@ -256,7 +261,6 @@ fn check_line_type(line: &str) -> (String, String, Vec<String>, Vec<(String, Str
                         } else {
                             inline_text += &format!("{pair} ");
                         }
-                        
                     }
 
                     
