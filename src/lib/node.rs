@@ -55,14 +55,14 @@ impl<'a> Node<'a>
         node
     }
 
-    pub fn new_html_element(tag: &str, parent_node: Option<&Rc<RefCell<Node<'a>>>>, identation: usize, classes: Vec<String>, id: &str) -> Rc<RefCell<Self>> {
+    pub fn new_html_element(tag: &str, parent_node: Option<&Rc<RefCell<Node<'a>>>>, identation: usize, classes: Vec<String>, id: &str, self_closed: bool, attributes: Vec<(String, String)>, inline_text: String) -> Rc<RefCell<Self>> {
         //let html_element: HtmlElement<'a, T> = HtmlElement::new(tag);
 
-        fn make_element<'a, T>(tag: &str, classes: Vec<String>, id: &str) -> HtmlElement<'a, T> {
-            HtmlElement::new(tag, id, classes)
+        fn make_element<'a, T>(tag: &str, classes: Vec<String>, id: &str, self_closed: bool, attributes: Vec<(String, String)>, inline_text: String) -> HtmlElement<'a, T> {
+            HtmlElement::new(tag, id, classes, self_closed, attributes, inline_text)
         }
 
-        let html_element: HtmlElement<'static, String> = make_element::<String>(tag, classes, id);
+        let html_element: HtmlElement<'static, String> = make_element::<String>(tag, classes, id, self_closed, attributes, inline_text);
 
         Node::new(parent_node, html_element, identation)
     }

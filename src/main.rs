@@ -1,7 +1,5 @@
 mod lib;
 
-use std::{rc::Rc, cell::RefCell};
-
 use lib::node::Node;
 
 //
@@ -16,7 +14,7 @@ use lib::node::Node;
 fn main() {
     let html = r"
         a.first.element#container-1#secondIdMakeIntoAClass @click='1 +1' x='3'
-            b class='red'
+            b class='red blue'
             .class.ok
         #box
             a
@@ -27,7 +25,8 @@ fn main() {
         // isto é um comentário
     ".to_string();
 
-    //Node::parse_string(html);
+    Node::parse_string(html);
+    
     let root = Node::parse_file("./example.bull");
 
     println!("{}", root.borrow().html());

@@ -4,7 +4,6 @@ use super::super::node::{NodeType, Tag};
 
 pub struct CommetElement<'a, T> {
     text: String,
-    multiline: bool,
     phantom: PhantomData<&'a T>
 }
 
@@ -36,7 +35,6 @@ impl<'a, T> CommetElement<'a, T> {
     pub fn new(text: &str) -> Self {
         CommetElement {
             text: text.to_string(),
-            multiline: false,
             phantom: PhantomData
         }
     }
