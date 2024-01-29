@@ -17,6 +17,9 @@ impl<'a> Node<'a> {
 
         let mut last_element: Rc<RefCell<Node>> = Rc::clone(&root);
 
+        let mut is_handling_script = false;
+        let mut script_identation = 0;
+
         for line in string.lines() {
             let line = line.replace("\t", "     ");
             let identation = get_identation(&line);
@@ -26,23 +29,39 @@ impl<'a> Node<'a> {
                 continue;
             }
 
-            //check if is string and handle it (' " `)
+            if identation <= script_identation {
+                is_handling_script = false;
+            }
 
-            //handle other kinds of elements
-            
-            let (tag_or_text, id, classes, properties, node_type, is_default_self_closed, inline_text) = check_line_type(&line);
+            if is_handling_script {
+                let mut last_node = last_element.borrow_mut();
+
+                let current_text = last_node.text().to_string();
+
+                last_node.set_text(&format!("{}\n{}", current_text, line)).expect("Something went wrong");
+                continue;
+            }  
+
+
+            //Handle elements, comments or text            
+            let (tag_or_text, id, classes, properties, node_type, is_default_self_closed, inline_text, is_script) = check_line_type(&line);
 
             match node_type {
                 NodeType::Element => {
                     let node = handle_new_element(&last_element, tag_or_text, id, classes, properties, identation, is_default_self_closed, inline_text);
                     last_element = Rc::clone(&node);
+                    is_handling_script = is_script;
+                    
+                    if is_handling_script {
+                        script_identation = identation;
+                    }
                 },
                 NodeType::Text => {
                     let node = handle_new_text_node(&last_element, identation, tag_or_text);
                     last_element = Rc::clone(&node);
                 }
                 _ => ()
-            }            
+            }        
         }
 
         root
@@ -146,7 +165,7 @@ fn get_identation(line: &str) -> usize {
     identation + 1
 }
 
-fn check_line_type(line: &str) -> (String, String, Vec<String>, Vec<(String, String)>, NodeType, bool, String) { //class, id, line sem identificador, tipo de elemento, ou throw erro
+fn check_line_type(line: &str) -> (String, String, Vec<String>, Vec<(String, String)>, NodeType, bool, String, bool) { //class, id, line sem identificador, tipo de elemento, ou throw erro
     let mut node_type = NodeType::Element;
     // Encontrar comentário inline em line
 
@@ -224,6 +243,12 @@ fn check_line_type(line: &str) -> (String, String, Vec<String>, Vec<(String, Str
 
     let mut attributes: Vec<(String, String)> = vec![];
 
+    let mut is_script = false;
+
+    if idetifier.to_lowercase() == "script" || idetifier.to_lowercase() == "style" {
+        is_script = true;
+    }
+    
     if regex.is_match(&idetifier) { //Tag é válida
         classes.remove(0);
 
@@ -284,6 +309,10 @@ fn check_line_type(line: &str) -> (String, String, Vec<String>, Vec<(String, Str
                     key += &char.to_string();
                 }
             }   
+
+            if key.len() > 0 {
+                attributes.push((key.clone(), "".to_owned()));
+            }
         }
 
         match classes.last() {
@@ -306,7 +335,7 @@ fn check_line_type(line: &str) -> (String, String, Vec<String>, Vec<(String, Str
 
         splited_line.remove(0);
 
-        return (idetifier, id, classes_output, attributes, node_type, is_defined_as_self_closed, inline_text);
+        return (idetifier, id, classes_output, attributes, node_type, is_defined_as_self_closed, inline_text, is_script);
     } else {
         //Check if is only comment
         if line.starts_with("//") {
@@ -314,7 +343,7 @@ fn check_line_type(line: &str) -> (String, String, Vec<String>, Vec<(String, Str
 
             let text = line.strip_prefix("//").unwrap().to_owned();
 
-            return (text, "".to_owned(), vec![], attributes, node_type, is_defined_as_self_closed, "".to_string());
+            return (text, "".to_owned(), vec![], attributes, node_type, is_defined_as_self_closed, "".to_string(), false);
         }
 
         if line.starts_with('"') || line.starts_with('\'') || line.starts_with('`') {
@@ -329,7 +358,7 @@ fn check_line_type(line: &str) -> (String, String, Vec<String>, Vec<(String, Str
 
             node_type = NodeType::Text;
 
-            return (line, "".to_owned(), vec![], attributes, node_type, false, "".to_string());
+            return (line, "".to_owned(), vec![], attributes, node_type, false, "".to_string(), false);
         }
 
         panic!("could not parse line: {}", line);

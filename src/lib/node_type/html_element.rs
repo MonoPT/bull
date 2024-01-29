@@ -9,7 +9,8 @@ pub struct HtmlElement<'a, T> {
     phantom: PhantomData<&'a T>,
     text: String,
     self_closed: bool,
-    attributes: Vec<(String, String)>
+    attributes: Vec<(String, String)>,
+    is_script: bool
 }
 
 impl<'a, T> NodeType<'a> for HtmlElement<'a, T> {
@@ -50,8 +51,9 @@ impl<'a, T> NodeType<'a> for HtmlElement<'a, T> {
         &self.text
     }
 
-    fn set_text(&mut self, _text: &str) -> Result<String, String> {
-        Err("Element is not a text node".to_owned())
+    fn set_text(&mut self, text: &str) -> Result<String, String> {
+        self.text = text.to_string();
+        Ok(self.text.clone())
     }
 }
 
@@ -64,7 +66,8 @@ impl<'a, T> HtmlElement<'a, T> {
             text: inline_text,
             phantom: PhantomData,
             self_closed,
-            attributes
+            attributes,
+            is_script: false
         }
     }
 

@@ -22,20 +22,4 @@ section#products class="teste" selected
         li "prod 2"
         li "prod 3"
 
-link href="./style1.css" rel="stylesheet" crossorigin
-
-script.script-tag crossorigin
-    let x = 33;
-    let y= 22;
-    for (i in arr) {
-        i++;
-    }
-
-style
-    .card  {
-        color: red;
-    }
-
-.row
-    ul
-        li "red"
+link href="./style1.css" rel="stylesheet" crossorigin asd="sad"
